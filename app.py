@@ -17,8 +17,23 @@ retriever = FAISS.load_local(
 # Load semantic reranker
 semantic_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Load multilingual translator
-translator = pipeline("translation", model="Helsinki-NLP/opus-mt-xx-en")
+# Language-specific translation models
+translation_models = {
+    "Hindi": "Helsinki-NLP/opus-mt-hi-en",
+    "Tamizh": "Helsinki-NLP/opus-mt-ta-en",
+    "Telugu": "Helsinki-NLP/opus-mt-te-en",
+    "Marathi": "Helsinki-NLP/opus-mt-mr-en",
+    "Gujarati": "Helsinki-NLP/opus-mt-gu-en"
+}
+
+# Translate non-English input
+def translate_to_english(text, language):
+    if language != "English":
+        model_name = translation_models.get(language)
+        if model_name:
+            translator = pipeline("translation", model=model_name)
+            return translator(text)[0]["translation_text"]
+    return text
 
 # Detect definition-style queries
 def is_definition_query(query):
@@ -40,12 +55,6 @@ def rerank_results(query, results):
     scored = [(r, util.cos_sim(query_embedding, semantic_model.encode(r.page_content, convert_to_tensor=True)).item()) for r in results]
     scored.sort(key=lambda x: x[1], reverse=True)
     return [r[0] for r in scored[:3]]
-
-# Translate non-English input
-def translate_to_english(text, language):
-    if language != "English":
-        return translator(text)[0]["translation_text"]
-    return text
 
 # Detect stat-heavy queries
 def is_stats_query(query):
