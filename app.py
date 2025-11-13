@@ -31,21 +31,49 @@ def translate_to_english(text, language):
     if language != "English":
         model_name = translation_models.get(language)
         if model_name:
-            translator = pipeline("translation", model=model_name)
-            return translator(text)[0]["translation_text"]
+            try:
+                translator = pipeline("translation", model=model_name)
+                translated = translator(text)[0]["translation_text"]
+                print(f"🔁 Translated from {language}: {translated}")
+                return translated
+            except Exception as e:
+                print(f"⚠️ Translation failed for {language}: {e}")
+                return text
     return text
 
 # Detect definition-style queries
 def is_definition_query(query):
     return query.lower().startswith(("what is", "define", "explain", "describe"))
 
-# Fallback definitions
+# Expanded fallback definitions
 def generate_definition(query):
     keyword = query.lower().replace("what is", "").replace("define", "").replace("explain", "").replace("describe", "").strip()
     definitions = {
-        "aquaculture": "Aquaculture is the controlled farming of aquatic organisms like fish, shellfish, and algae in freshwater or marine environments. It supports food production, habitat restoration, and conservation.",
-        "natural farming": "Natural farming is a chemical-free, sustainable farming method that relies on natural inputs like compost, cow dung, and crop rotation to maintain soil health and productivity.",
-        "ipm": "Integrated Pest Management (IPM) is an eco-friendly approach to pest control that combines biological, cultural, mechanical, and chemical methods to minimize crop damage and environmental impact."
+        "biopesticides": "Biopesticides are natural pest control agents derived from microorganisms, plants, or minerals.",
+        "chemical pesticides": "Chemical pesticides are synthetic compounds used to kill or repel pests.",
+        "agronomy": "Agronomy is the science of soil management and crop production.",
+        "soil science": "Soil science studies soil formation, classification, mapping, and fertility.",
+        "crop rotation": "Crop rotation is the practice of growing different crops in succession to improve soil health.",
+        "ipm": "Integrated Pest Management (IPM) combines biological, cultural, mechanical, and chemical methods.",
+        "natural farming": "Natural farming avoids synthetic inputs and relies on biodiversity and organic matter.",
+        "trichoderma": "Trichoderma is a genus of fungi used as a biocontrol agent against soil-borne pathogens.",
+        "fertigation": "Fertigation is the application of fertilizers through irrigation systems.",
+        "mulching": "Mulching involves covering soil to retain moisture and suppress weeds.",
+        "vermicompost": "Vermicompost is organic fertilizer produced by earthworms.",
+        "pest management": "Pest management includes monitoring, prevention, and control strategies.",
+        "disease management": "Disease management involves identifying symptoms and applying treatments.",
+        "seed treatment": "Seed treatment involves coating seeds to protect against pests and diseases.",
+        "intercropping": "Intercropping is growing multiple crops together to optimize space and reduce pests.",
+        "organic farming": "Organic farming emphasizes natural inputs and ecological balance.",
+        "precision agriculture": "Precision agriculture uses sensors and data to optimize farming decisions.",
+        "climate-smart agriculture": "Climate-smart agriculture enhances resilience to climate change.",
+        "agroforestry": "Agroforestry integrates trees into crop and livestock systems.",
+        "rainfall patterns": "Rainfall patterns refer to seasonal distribution and intensity of precipitation.",
+        "kharif season": "Kharif season crops are sown with the onset of monsoon and harvested in autumn.",
+        "rabi season": "Rabi season crops are sown in winter and harvested in spring.",
+        "apiculture": "Apiculture is the practice of beekeeping for honey and pollination.",
+        "sericulture": "Sericulture is the cultivation of silkworms for silk production.",
+        "allied enterprises": "Allied enterprises include dairy, poultry, fisheries, and other farm-linked activities."
     }
     return definitions.get(keyword, "Definition not found. Please rephrase or ask a more specific question.")
 
@@ -78,7 +106,7 @@ def raman_krishi_chatbot(query, language):
             top_results = [r.page_content for r in reranked]
             response = "\n\n".join(top_results)
         else:
-            response = "No results found."
+            response = generate_definition(query)
 
     if is_stats_query(query):
         response = summarize_stats(response)
@@ -108,7 +136,7 @@ interface = gr.Interface(
         container=True
     ),
     title="🤖 RamanKrishiAI Chatbot",
-    description="Ask me anything about sustainable agriculture. Powered by FAISS + HuggingFaceEmbeddings + Semantic Reranking.",
+    description="Ask me anything about sustainable agriculture. Powered by FAISS + HuggingFaceEmbeddings + Semantic Reranking + Multilingual Translation + Authentic Definitions.",
     theme="soft",
     flagging_mode="never"
 )
