@@ -142,4 +142,4 @@ interface = gr.Interface(
 )
 
 # Launch for Hugging Face Spaces
-  interface.launch(share=True)
+interface.launch(share=True)
