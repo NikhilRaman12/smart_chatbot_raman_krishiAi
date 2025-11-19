@@ -29,4 +29,4 @@ interface = gr.Interface(
 )
 
 # Launch for Hugging Face Spaces — disable SSR and sharing
-interface.launch(share=False, ssr_mode=False)
+interface.launch(share=True)
